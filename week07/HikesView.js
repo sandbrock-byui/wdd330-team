@@ -1,4 +1,3 @@
-
 // Hike View handler
 export default class HikesView {
 
@@ -7,14 +6,22 @@ export default class HikesView {
     this.listElement = listElement;
   }
 
-  renderHikeList(hikeList, clickCallback = null) {
+  renderHikeList(hikeList, clickCallback = null, commentSubmitCallback = null, comments = []) {
     hikeList.forEach(hike => {
-        this.renderHike(hike, this.listElement, true, clickCallback);
+        const hikeComments = comments.filter(comment => comment.hikeId === hike.id);
+        this.renderHike(hike, hikeComments, this.listElement, true, clickCallback, null, commentSubmitCallback);
     });
   }
 
-  renderHike(hike, comments, parentEl, light = false, clickCallback = null, backCallback = null) {
-    console.log (comments);
+  renderHike(
+    hike,
+    comments,
+    parentEl,
+    light = false,
+    clickCallback = null,
+    backCallback = null,
+    commentSubmitCallback = null
+  ) {
     const item = document.createElement('li');
     item.classList.add('hike');
 
@@ -46,8 +53,40 @@ export default class HikesView {
               <p>${hike.longDescription}</p>
           </div>`;
     }
-    const commentsHtml = this.renderComments(comments);
-    item.innerHTML += commentsHtml;
+
+    item.innerHTML += `
+        <div>
+          <h3>Comments</h3>
+        </div>
+      `;
+
+    if (light === false) {
+      // Eww
+      setTimeout(() => {
+        const submitCommentButton = document.querySelector('.submit-comment');
+
+        submitCommentButton.addEventListener('click', (event) => {
+          event.preventDefault();
+
+          const newComment = document.querySelector('#comment');
+
+          if (commentSubmitCallback) {
+            commentSubmitCallback(hike, newComment.value);
+          }
+        });
+      }, 250);
+
+      item.innerHTML += `
+        <form style="margin-bottom: 2em; display: flex; flex-direction: column; gap: 1em; align-items: center;">
+          <label style="width: 100%;" for="comment">Comment</label>
+          <textarea style="width: 100%; height: 50px;" id="comment"></textarea>
+          <button class="submit-comment" style="max-width: 200px;">Submit Comment</button>
+        </form>
+      `;
+    }
+
+    // Add the comments box
+    item.innerHTML += this.renderComments(comments);
 
     item.innerHTML += `
         </div>
@@ -70,18 +109,22 @@ export default class HikesView {
 
     parentEl.append(item);
   }
+
   renderComments(comments){
     const commentsDiv= document.createElement('div');
+
     commentsDiv.classList.add ('hike-comments');
+
     comments.forEach(comment => {
       const commentDiv = document.createElement('div');
-      commentDiv.classList.add ('hike-comment');
-      commentDiv.innerHTML = `<strong> ${comment.date}</strong> - ${comment.content}`;
-      commentsDiv.append(commentDiv);
 
+      commentDiv.classList.add('hike-comment');
+      commentDiv.innerHTML = `<strong> ${comment.date.toLocaleDateString()}</strong> <br /> ${comment.content}`;
+
+      commentsDiv.append(commentDiv);
     });
+
     return commentsDiv.outerHTML;
   }
 
 }
-

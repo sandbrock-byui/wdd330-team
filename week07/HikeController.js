@@ -5,7 +5,7 @@ import CommentModel from './CommentModel.js';
 // Hike controller
 export default class HikesController {
   constructor(parentSelector) {
-    this.parentElement = document.querySelector(parentSelector); 
+    this.parentElement = document.querySelector(parentSelector);
 
     // this is how our controller will know about the model and view...we add them right into the class as members.
     this.hikeModel = new HikeModel();
@@ -22,7 +22,9 @@ export default class HikesController {
 
     this.hikesView.renderHikeList(
       this.hikeModel.getAllHikes(),
-      this.hikeCallback.bind(this)
+      this.hikeCallback.bind(this),
+      this.commentSubmitCallback.bind(this),
+      this.commentModel.getAllComments(),
     );
   }
 
@@ -33,15 +35,29 @@ export default class HikesController {
 
     const hike = this.hikeModel.getHike(hikeName);
     const comments = this.commentModel.getCommentsByHike(hike.id);
-    console.log (`comments1`, comments);
     this.hikesView.renderHike(hike, comments, parentEl);
   }
 
   hikeCallback(hike) {
     this.clearElement();
+
     const comments = this.commentModel.getCommentsByHike(hike.id);
-    console.log (`comments1`, comments);
-    this.hikesView.renderHike(hike, comments, this.parentElement, false, null, this.showHikeList.bind(this));
+
+    this.hikesView.renderHike(
+      hike,
+      comments,
+      this.parentElement,
+      false,
+      null,
+      this.showHikeList.bind(this),
+      this.commentSubmitCallback.bind(this),
+    );
+  }
+
+  commentSubmitCallback(hike, comment) {
+    this.commentModel.addComment(hike.id, comment);
+
+    this.hikeCallback(hike);
   }
 }
 
