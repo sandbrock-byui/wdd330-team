@@ -61,23 +61,32 @@ export default class QuakeController {
     this.parentElement.innerHTML = 'Loading...';
 
     // get the list of quakes in the specified radius of the location
-    const quakeList = await this.quake.getEarthQuakesByRadius(
-      this.position,
-      100
-    );
-
-    console.log('quakeList', quakeList);
+    const quakeList = await this.quake.getEarthQuakesByRadius(this.position, radius);
 
     // render the list to html
     this.quakeView.renderQuakeList(quakeList, this.parentElement);
 
     // add a listener to the new list of quakes to allow drill down in to the details
-    this.parentElement.addEventListener('touchend', e => {
-      this.getQuakeDetails(e.target.dataset.id);
+    Array.from(this.parentElement.querySelectorAll('li')).forEach((li) => {
+      li.addEventListener('click', async () => {
+        this.getQuakeDetails(li.dataset.id);
+      });
     });
   }
 
   async getQuakeDetails(quakeId) {
     // get the details for the quakeId provided from the model, then send them to the view to be displayed
+    const quake = await this.quake.getQuakeById(quakeId);
+
+    this.quakeView.renderQuake(quake, this.parentElement);
+
+    // Make a button to go back to the list
+    const back = document.createElement('button');
+    back.innerText = 'Back to List';
+    back.addEventListener('click', () => {
+      this.getQuakesByRadius();
+    });
+
+    this.parentElement.prepend(back);
   }
 }

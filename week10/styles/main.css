@@ -2,6 +2,7 @@ main {
   max-width: 930px;
   margin: 0 auto;
   background-color: rgb(223, 176, 176);
+  padding: 1em;
 }
 
 #quakeList {
